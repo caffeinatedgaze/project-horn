@@ -1,0 +1,334 @@
+openapi: 3.0.3
+info:
+  title: Zigbee Demo Control API
+  version: 1.0.0
+  description: Local control API for pairing and operating Zigbee bulbs in the demo.
+servers:
+  - url: http://localhost:8080
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+  /pairing/start:
+    post:
+      summary: Start a pairing session
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PairingStartRequest"
+      responses:
+        "200":
+          description: Pairing started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PairingSession"
+  /pairing/stop:
+    post:
+      summary: Stop the active pairing session
+      responses:
+        "200":
+          description: Pairing stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PairingSession"
+  /devices:
+    get:
+      summary: List paired devices
+      responses:
+        "200":
+          description: Device list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Device"
+  /devices/{deviceId}:
+    get:
+      summary: Get device details
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Device details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+  /devices/{deviceId}/state:
+    post:
+      summary: Set device state
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceStateRequest"
+      responses:
+        "200":
+          description: Device state updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+  /devices/{deviceId}/refresh:
+    post:
+      summary: Refresh device status
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Device status refreshed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+  /groups:
+    get:
+      summary: List groups
+      responses:
+        "200":
+          description: Group list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Group"
+    post:
+      summary: Create a group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupCreateRequest"
+      responses:
+        "201":
+          description: Group created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+  /groups/{groupId}/state:
+    post:
+      summary: Set group state
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceStateRequest"
+      responses:
+        "200":
+          description: Group state updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+  /midi/mapping:
+    get:
+      summary: List fixed MIDI channel mapping (0..9 bulbs, 10 group all_bulbs)
+      responses:
+        "200":
+          description: MIDI mapping
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MidiMappingItem"
+  /midi/events:
+    post:
+      summary: Apply MIDI input where channel selects bulb and key sets intensity
+      description: |
+        Channel 10 controls group `all_bulbs`. While channel 10 is ON, per-bulb
+        channels (0..9) are suppressed and not published.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MidiEventRequest"
+      responses:
+        "200":
+          description: MIDI event applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MidiEventResult"
+        "400":
+          description: Unmapped channel or channel outside 0..10
+components:
+  schemas:
+    PairingStartRequest:
+      type: object
+      properties:
+        duration_seconds:
+          type: integer
+          minimum: 30
+          maximum: 600
+    PairingSession:
+      type: object
+      properties:
+        session_id:
+          type: string
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+        started_at:
+          type: string
+          format: date-time
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
+        paired_device_ids:
+          type: array
+          items:
+            type: string
+    Device:
+      type: object
+      properties:
+        device_id:
+          type: string
+          nullable: true
+        friendly_name:
+          type: string
+        status:
+          type: string
+          enum: [available, unavailable]
+        last_seen_at:
+          type: string
+          format: date-time
+          nullable: true
+        capabilities:
+          type: object
+          additionalProperties: true
+    Group:
+      type: object
+      properties:
+        group_id:
+          type: string
+        name:
+          type: string
+        device_ids:
+          type: array
+          items:
+            type: string
+    GroupCreateRequest:
+      type: object
+      required: [name, device_ids]
+      properties:
+        name:
+          type: string
+        device_ids:
+          type: array
+          items:
+            type: string
+    DeviceStateRequest:
+      type: object
+      properties:
+        state:
+          type: string
+          enum: [ON, OFF]
+        brightness:
+          type: integer
+          minimum: 0
+          maximum: 254
+    MidiMappingItem:
+      type: object
+      properties:
+        channel:
+          type: integer
+          minimum: 0
+          maximum: 10
+        slot:
+          type: integer
+          minimum: 0
+          maximum: 10
+        device_id:
+          type: string
+          description: Zigbee2MQTT device ID, or "NONE" when this key is intentionally unmapped.
+          example: NONE
+    MidiEventRequest:
+      type: object
+      required: [channel]
+      properties:
+        event_type:
+          type: string
+          enum: [note_on, note_off]
+          nullable: true
+          description: If set to note_off, the API forces brightness to 0.
+        channel:
+          type: integer
+          minimum: 0
+          maximum: 10
+        key:
+          type: integer
+          minimum: 0
+          maximum: 17
+          nullable: true
+          description: Optional note number in 0..17 mapped by step function to intensity 1..254. If absent, light is turned OFF.
+        timestamp:
+          type: string
+          format: date-time
+    MidiEventResult:
+      type: object
+      properties:
+        device_id:
+          type: string
+        slot:
+          type: integer
+        key:
+          type: integer
+          nullable: true
+        event_type:
+          type: string
+          nullable: true
+        channel:
+          type: integer
+        brightness:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+          nullable: true
+        mqtt_topic:
+          type: string
+        mqtt_payload:
+          type: object
+          additionalProperties: true
+        published:
+          type: boolean
+          description: False when the same payload was already published to this topic (deduplicated).
+        suppressed_by_group_channel:
+          type: boolean
+          description: True when this per-bulb command was ignored because group channel 10 is active.

@@ -1,0 +1,36 @@
+[project]
+name = "blink-in-midi"
+version = "0.1.0"
+description = "MIDI input bridge that maps events to local API request intents"
+readme = "specs/001-midi-http-bridge/quickstart.md"
+requires-python = ">=3.11"
+dependencies = [
+  "mido>=1.3.2",
+  "python-rtmidi>=1.5.8",
+  "httpx>=0.27.0",
+  "pydantic>=2.7.0",
+  "typer>=0.12.3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2.0",
+  "ruff>=0.5.0",
+]
+
+[project.scripts]
+blink-midi = "blink_midi.cli:main"
+
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

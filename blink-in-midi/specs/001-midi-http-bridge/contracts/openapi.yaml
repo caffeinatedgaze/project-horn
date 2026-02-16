@@ -1,0 +1,95 @@
+openapi: 3.0.3
+info:
+  title: Local MIDI Intake API
+  version: 1.0.0
+  description: |
+    Contract for the local endpoint targeted by the MIDI bridge.
+    Bridge code validates mapped MIDI payloads and sends HTTP POST requests
+    to this endpoint for supported MIDI events.
+servers:
+  - url: http://127.0.0.1:8000
+paths:
+  /midi/events:
+    post:
+      summary: Receive mapped MIDI event payload
+      operationId: ingestMidiEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MidiEventPayload'
+      responses:
+        '200':
+          description: Event accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    MidiEventPayload:
+      type: object
+      required:
+        - event_type
+        - channel
+        - key
+        - value
+        - state
+        - timestamp
+      properties:
+        event_type:
+          type: string
+          enum: [note_on, note_off, control_change]
+          description: MIDI event classification after bridge normalization.
+        channel:
+          type: integer
+          minimum: 0
+          maximum: 15
+        key:
+          type: integer
+          minimum: 0
+          maximum: 127
+        value:
+          type: integer
+          minimum: 0
+          maximum: 127
+        state:
+          type: string
+          nullable: true
+          enum: [on, off]
+          description: >
+            Note state for note events. `on` for note start, `off` for note end.
+            For non-note events (e.g. `control_change`), this is `null`.
+        timestamp:
+          type: string
+          format: date-time
+      example:
+        event_type: note_on
+        channel: 0
+        key: 60
+        value: 100
+        state: on
+        timestamp: "2026-02-11T01:00:00Z"
+    AckResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+    ErrorResponse:
+      type: object
+      required: [status, message]
+      properties:
+        status:
+          type: string
+          enum: [error]
+        message:
+          type: string
