@@ -1,0 +1,25 @@
+# Node
+node_modules/
+dist/
+build/
+*.log
+
+# Env
+.env
+.env.*
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+/.codex/
+/.venv/
+**/__pycache__/
+*.pyc
+*.swn
+*.swo
+
+# Misc
+*.tmp
+*.swp

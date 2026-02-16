@@ -1,0 +1,50 @@
+{
+    "1": {
+        "brightness": 135,
+        "state": "ON"
+    },
+    "2": {
+        "brightness": 135,
+        "state": "ON"
+    },
+    "0x3ccfb436f84e8c37": {
+        "state": "ON",
+        "brightness": 135,
+        "linkquality": 196
+    },
+    "0x3ccfb43607d98b92": {
+        "brightness": 135,
+        "state": "ON",
+        "linkquality": 184
+    },
+    "0x3ccfb435d8988b8d": {
+        "state": "ON",
+        "brightness": 135,
+        "linkquality": 216
+    },
+    "0x3ccfb437793f8c4d": {
+        "state": "ON",
+        "brightness": 135,
+        "linkquality": 192
+    },
+    "0x3ccfb43613a08b93": {
+        "state": "ON",
+        "brightness": 135,
+        "linkquality": 180
+    },
+    "0x3ccfb4362d078b96": {
+        "brightness": 209,
+        "state": "ON",
+        "linkquality": 180
+    },
+    "0x3ccfb4334dcc8ab1": {
+        "brightness": 135,
+        "state": "ON",
+        "linkquality": 180
+    },
+    "0x3ccfb43542b08b75": {
+        "brightness": 135,
+        "state": "ON",
+        "linkquality": 140
+    }
+}

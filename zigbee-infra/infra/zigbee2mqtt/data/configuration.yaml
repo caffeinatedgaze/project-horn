@@ -1,0 +1,36 @@
+homeassistant:
+  enabled: false
+mqtt:
+  server: mqtt://mosquitto:1883
+serial:
+  port: tcp://host.docker.internal:49191
+  adapter: ezsp
+  baudrate: 115200
+advanced:
+  log_level: info
+frontend:
+  enabled: true
+  port: 8080
+version: 5
+devices:
+  '0x3ccfb436f84e8c37':
+    friendly_name: Bulb 5
+  '0x3ccfb43607d98b92':
+    friendly_name: Bulb 3
+  '0x3ccfb435d8988b8d':
+    friendly_name: Bulb 1
+  '0x3ccfb43613a08b93':
+    friendly_name: Bulb 2
+  '0x3ccfb437793f8c4d':
+    friendly_name: Bulb 4
+  '0x3ccfb4362d078b96':
+    friendly_name: Bulb 6
+  '0x3ccfb4334dcc8ab1':
+    friendly_name: Bulb 7
+  '0x3ccfb43542b08b75':
+    friendly_name: Bulb 8
+groups:
+  '1':
+    friendly_name: all_bulbs
+  '2':
+    friendly_name: except_ceiling

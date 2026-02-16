@@ -1,0 +1,10 @@
+homeassistant: false
+permit_join: ${Z2M_PERMIT_JOIN}
+mqtt:
+  server: mqtt://${MQTT_HOST}:${MQTT_PORT}
+serial:
+  port: tcp://${SERIAL_HOST}:${SERIAL_PORT}
+advanced:
+  log_level: ${Z2M_LOG_LEVEL}
+frontend:
+  port: 8080

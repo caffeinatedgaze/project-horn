@@ -1,0 +1,13 @@
+homeassistant:
+  enabled: false
+mqtt:
+  server: mqtt://mosquitto:1883
+serial:
+  port: tcp://host.docker.internal:3333
+  adapter: ezsp
+  baudrate: 115200
+advanced:
+  log_level: info
+frontend:
+  enabled: true
+  port: 8080

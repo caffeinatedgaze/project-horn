@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: zigbee-mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/data:/mosquitto/data
+    restart: unless-stopped
+
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt
+    container_name: zigbee2mqtt
+    depends_on:
+      - mosquitto
+    environment:
+      - TZ=UTC
+      - ZIGBEE2MQTT_CONFIG_MQTT_SERVER=mqtt://${MQTT_HOST:-mosquitto}:${MQTT_PORT:-1883}
+      - ZIGBEE2MQTT_CONFIG_SERIAL_PORT=tcp://${SERIAL_HOST}:${SERIAL_PORT}
+      - ZIGBEE2MQTT_CONFIG_PERMIT_JOIN=${Z2M_PERMIT_JOIN:-false}
+      - ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_LEVEL=${Z2M_LOG_LEVEL:-info}
+    volumes:
+      - ./zigbee2mqtt/data:/app/data
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+
+  control-api:
+    image: python:3.11-slim
+    container_name: zigbee-control-api
+    working_dir: /app
+    environment:
+      - MQTT_HOST=${MQTT_HOST:-mosquitto}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - CONTROL_API_PORT=${CONTROL_API_PORT:-8080}
+      - Z2M_DATA_DIR=/app/zigbee2mqtt-data
+      - MIDI_BULB_IDS=${MIDI_BULB_IDS:-}
+    volumes:
+      - ./control-api:/app
+      - ./zigbee2mqtt/data:/app/zigbee2mqtt-data:ro
+    command: ["sh", "-c", "pip install uv && uv pip install --system fastapi uvicorn paho-mqtt && python -m uvicorn control_api.main:app --host 0.0.0.0 --port 8080"]
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mosquitto
+      - zigbee2mqtt
+    restart: unless-stopped
